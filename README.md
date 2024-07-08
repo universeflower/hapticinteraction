@@ -18,7 +18,8 @@ This project aims to create a system where a learner can mimic hand gestures per
    git clone https://github.com/universeflower/hapticinteraction.git
    cd hapticinteraction
 
-2.install required libraries:
+2. install required libraries:
+   ```bash
   pip install -r requirements.txt
 ## Usage
 1. Run the project:
@@ -31,6 +32,7 @@ This project aims to create a system where a learner can mimic hand gestures per
 - Adjustment of haptic device using PID control
 
 ## Project Structure
+  ```bash
   hapticinteraction/
 │
 ├── main.py

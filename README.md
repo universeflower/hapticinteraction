@@ -40,7 +40,7 @@ hapticinteraction/
 └── mediapipe_utils.py
 
 ## video
-![Server Demo](server.mp4)
+![Server Demo](C:\Users\user\Desktop\server.mp4)
 
-![Client Demo](client.mp4)
+![Client Demo](C:\Users\user\Desktop\client.mp4)
 

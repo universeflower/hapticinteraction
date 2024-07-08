@@ -32,9 +32,7 @@ This project aims to create a system where a learner can mimic hand gestures per
 - Adjustment of haptic device using PID control
 
 ## Project Structure
-  ```bash
-  hapticinteraction/
-│
+hapticinteraction/
 ├── main.py
 ├── README.md
 ├── requirements.txt

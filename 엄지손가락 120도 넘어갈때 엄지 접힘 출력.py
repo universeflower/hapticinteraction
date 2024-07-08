@@ -1,6 +1,8 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 # MediaPipe hands model 초기화
 mp_hands = mp.solutions.hands
@@ -10,18 +12,26 @@ hands = mp_hands.Hands(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5)
 
+def calculate_angle(point1, point2, point3):
+    """세 점 사이의 각도 계산"""
+    vector1 = np.array(point1) - np.array(point2)
+    vector2 = np.array(point3) - np.array(point2)
+    dot_product = np.dot(vector1, vector2)
+    norm1 = np.linalg.norm(vector1)
+    norm2 = np.linalg.norm(vector2)
+    cosine_theta = dot_product / (norm1 * norm2)
+    angle = np.arccos(cosine_theta)
+    angle_degrees = np.degrees(angle)
+    return angle_degrees
+
 # 이전 랜드마크 초기화
 captured_landmarks = None
 
-# 각도 계산 함수
-def calculate_angle(point1, point2, point3):
-    """세 점 사이의 각도 계산"""
-    radians = np.arctan2(point3[1] - point2[1], point3[0] - point2[0]) - np.arctan2(point1[1] - point2[1], point1[0] - point2[0])
-    angle = np.abs(np.degrees(radians))
-    return angle
-
 # 웹캠 실행
 cap = cv2.VideoCapture(0)
+
+start_time = datetime.now()
+end_time = start_time + timedelta(seconds=30)
 
 while cap.isOpened():
     ret, img = cap.read()
@@ -48,32 +58,29 @@ while cap.isOpened():
             if captured_landmarks is None:
                 captured_landmarks = landmarks
                 continue
-            
-            # v12번과 v23사이의 각, v23과 v34사이의 각을 계산하여 각 손가락의 구부러짐 정도를 측정
             angle_12_23 = calculate_angle(captured_landmarks[1], captured_landmarks[2], captured_landmarks[3])
             angle_23_34 = calculate_angle(captured_landmarks[2], captured_landmarks[3], captured_landmarks[4])
-
+            
+            if cv2.waitKey(1) == ord('s'):
+             print("Captured angles:")
+             print("Angle between vectors 12-23:", angle_12_23)
+             print("Angle between vectors 23-34:", angle_23_34)
+             print()
+            captured_landmarks = landmarks
             # 구부러짐 각이 120도 이상이면 엄지 손가락이 접혀있다고 판단
-            if angle_12_23 <= 120 or angle_23_34 <= 120:
+            if angle_12_23 < 120 or angle_23_34 < 120:
                 print("Thumb folded")
 
-            # 손가락 사이의 벡터와 각도 출력
-            if cv2.waitKey(1) == ord('s'):
-    
-                vector_12 = captured_landmarks[2] - captured_landmarks[1]
-                vector_23 = captured_landmarks[3] - captured_landmarks[2]
-                vector_34 = captured_landmarks[4] - captured_landmarks[3]
-                print("Angle between vectors 12-23:", np.degrees(np.arccos(np.dot(vector_12, vector_23) / (np.linalg.norm(vector_12) * np.linalg.norm(vector_23)))))
-                print("Angle between vectors 23-34:", np.degrees(np.arccos(np.dot(vector_23, vector_34) / (np.linalg.norm(vector_23) * np.linalg.norm(vector_34)))))
-
-            # 현재 랜드마크를 이전 랜드마크로 업데이트
-            captured_landmarks = landmarks
 
     # 화면에 출력
     cv2.imshow('Hand Landmark Detection', img)
+    
+    # 's'를 누르면 현재까지 캡처된 각도 출력
+   
 
+          
     # 종료 조건
-    if cv2.waitKey(1) == ord('q'):
+    if cv2.waitKey(1) == ord('q') :
         break
 
 # 리소스 해제

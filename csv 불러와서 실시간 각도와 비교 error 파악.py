@@ -25,20 +25,33 @@ def calculate_angle(point1, point2, point3):
     angle_degrees = np.degrees(angle)
     return angle_degrees
 
+# CSV 파일에서 각도 데이터를 불러오기
+angles_from_csv = []
+with open('angles_thumb.csv', mode='r') as file:
+    reader = csv.reader(file)
+    next(reader)  # 헤더 건너뛰기
+    for row in reader:
+        angles_from_csv.append(float(row[1]))
+
 # 이전 랜드마크 초기화
 captured_landmarks = None
-angles_12_23 = []
-angles_23_34 = []
-landmarks_12_23 = []
+real_time_angles = []
+error_values = []
 
 # 웹캠 실행
 cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    print("웹캠을 열 수 없습니다.")
+    exit()
 
 start_time = datetime.now()
 end_time = start_time + timedelta(seconds=10)
 
 while cap.isOpened():
     ret, img = cap.read()
+    if not ret:
+        print("웹캠에서 프레임을 읽을 수 없습니다.")
+        break
 
     # 이미지 좌우 반전
     img = cv2.flip(img, 1)
@@ -63,52 +76,49 @@ while cap.isOpened():
                 captured_landmarks = landmarks
                 continue
             
-            # v12번과 v23사이의 각, v23과 v34사이의 각을 계산하여 각 손가락의 구부러짐 정도를 측정
-            angle_12_23 = calculate_angle(captured_landmarks[1], captured_landmarks[2], captured_landmarks[3])
-            angle_23_34 = calculate_angle(captured_landmarks[2], captured_landmarks[3], captured_landmarks[4])
-
-            # 구부러짐 각이 120도 이상이면 엄지 손가락이 접혀있다고 판단
-            if angle_12_23 < 120 or angle_23_34 < 120:
-                print("Thumb folded")
-                
-            # 현재 각도와 랜드마크 좌표를 리스트에 저장
-            angles_12_23.append(angle_12_23)
-            angles_23_34.append(angle_23_34)
-            landmarks_12_23.append([landmarks[1], landmarks[2], landmarks[3]])
+            # 각 손가락에 대한 랜드마크 각도 계산
+            angle_21_23 = calculate_angle(captured_landmarks[1], captured_landmarks[2], captured_landmarks[3])
+            
+            real_time_angles.append(angle_21_23)
+            if len(angles_from_csv) > len(real_time_angles):
+                error = angle_21_23 - angles_from_csv[len(real_time_angles) - 1]
+                error_values.append(error)
+            else:
+                error_values.append(0)
 
             captured_landmarks = landmarks
 
     # 화면에 출력
     cv2.imshow('Hand Landmark Detection', img)
 
-    # 0.5초마다 시간 체크 및 종료
-    if datetime.now() > end_time:
-        break
-
     # 종료 조건
-    if cv2.waitKey(1) == ord('q'):
+    if datetime.now() > end_time or cv2.waitKey(1) == ord('q'):
         break
 
 # 리소스 해제
 cap.release()
 cv2.destroyAllWindows()
 
-# CSV 파일로 데이터 저장
-with open('hand_data.csv', mode='w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(['Frame', 'Angle_12_23', 'Angle_23_34', 'Landmark_12_x', 'Landmark_12_y', 'Landmark_12_z',
-                     'Landmark_23_x', 'Landmark_23_y', 'Landmark_23_z', 'Landmark_34_x', 'Landmark_34_y', 'Landmark_34_z'])
-    for i in range(len(angles_12_23)):
-        writer.writerow([i, angles_12_23[i], angles_23_34[i],
-                         landmarks_12_23[i][0][0], landmarks_12_23[i][0][1], landmarks_12_23[i][0][2],
-                         landmarks_12_23[i][1][0], landmarks_12_23[i][1][1], landmarks_12_23[i][1][2],
-                         landmarks_12_23[i][2][0], landmarks_12_23[i][2][1], landmarks_12_23[i][2][2]])
-
 # 캡처된 각도를 그래프로 표시
-plt.plot(angles_12_23, label='Angle between vectors 12-23')
-plt.plot(angles_23_34, label='Angle between vectors 23-34')
+plt.figure(figsize=(10, 6))
+plt.plot(real_time_angles, label='Real-time Angle')
+plt.plot(error_values, label='Error Value')
 plt.xlabel('Frame')
 plt.ylabel('Angle (degrees)')
-plt.title('Angle over time')
+plt.title('Real-time Angle and Error Value')
 plt.legend()
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -44,7 +44,7 @@ hapticinteraction/
 
 [![Client Demo](https://img.youtube.com/vi/BlLi7VD5V_g/0.jpg)](https://youtu.be/BlLi7VD5V_g)
 
-## result graph
+## Result Graph
 ![image](https://github.com/universeflower/hapticinteraction/assets/132273821/7e3b4318-03df-4cc1-ad62-65fd25c3c5b8)
 
 

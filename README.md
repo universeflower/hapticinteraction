@@ -20,7 +20,7 @@ This project aims to create a system where a learner can mimic hand gestures per
 
 2. install required libraries:
    ```bash
-  pip install -r requirements.txt
+   pip install -r requirements.txt
 ## Usage
 1. Run the project:
    python main.py

@@ -38,3 +38,9 @@ hapticinteraction/
 ├── requirements.txt
 ├── webcam.py
 └── mediapipe_utils.py
+
+## video
+![Server Demo](server.mp4)
+
+![Client Demo](client.mp4)
+
